@@ -22,7 +22,12 @@ def client(delay: int, hs_id, socks_port, send_data: bytearray, recv_data: bytea
             try:
                 s.send(chr(to_send).encode('utf-8'))
             except TypeError:
-                s.send(to_send)
+                try:
+                    if to_send is not None:
+                        s.send(to_send)
+                except BrokenPipeError:
+                    # lost connection
+                    pass
             except BrokenPipeError:
                 pass
             sleep(delay)
