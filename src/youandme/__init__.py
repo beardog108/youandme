@@ -1,17 +1,11 @@
 import sys
 
+import stem
+
+OWN_TOR = False
 try:
     from .starttor import launch_tor
+    OWN_TOR = True
 except ModuleNotFoundError:
     pass
 
-from .server import server
-
-def interactive_connector():
-    server()
-
-
-if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        if sys.argv[1] == 'interactive':
-            interactive_connector()

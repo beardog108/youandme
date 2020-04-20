@@ -1,0 +1,1 @@
+garbage_character = b'\x00'

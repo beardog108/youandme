@@ -1,41 +1,34 @@
 import socket
 import time
+from.commands import garbage_character
 
-from stem.control import Controller
 from threading import Thread
 
 
-def server():
-    send_data = bytearray()
-    def send_loop(conn):
+def server(delay: int, controller, conn, send_data: bytearray, recv_data: bytearray):
+    def send_loop():
         while True:
-            time.sleep(0.1)
-            if not send_data:
-                conn.sendall(bytes([55]))
-            else:
-                conn.sendall(send_data.pop(0))
-    with Controller.from_port(port=1338) as controller:
-        controller.authenticate()
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            ip = '127.0.0.1'
-            s.bind((ip, 0))
-            s.listen(1)
-            port = s.getsockname()[1]
-            serv = controller.create_ephemeral_hidden_service({
-            1337: f'{ip}:{port}'},
-            key_content = 'ED25519-V3',
-            await_publication = True,
-            )
-            print('on', serv.service_id, 'to', ip, port)
-            conn, addr = s.accept()
-            with conn:
-                Thread(target=send_loop, args=[conn], daemon=True).start()
-                print('Connected by', addr)
-                while True:
-                    data = conn.recv(1)
-                    if not data: break
-                    data = data.strip()
-                    if data != bytes([55]):
-                        print(data)
-                    #conn.sendall(data)
+            time.sleep(delay)
+            try:
+                if not send_data:
+                    conn.sendall(garbage_character)
+                else:
+                    char = send_data.pop(0)
+                    try:
+                        conn.sendall(ord(char))
+                    except TypeError:
+                        try:
+                            conn.sendall(char)
+                        except TypeError:
+                            conn.sendall(chr(char).encode('utf-8'))
+            except OSError:
+                pass
 
+    with conn:
+        Thread(target=send_loop, daemon=True).start()
+        while True:
+            data = conn.recv(1)
+            if not data: break
+            if data != garbage_character and data:
+                for i in data:
+                    recv_data.append(i)
