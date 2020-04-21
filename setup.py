@@ -6,16 +6,17 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 setup(name='youandme',
-      version='0.0.1',
+      version='0.0.2',
       description='Simple private data sharing via bytearrays, Tor tunneling and metadata paranoia',
       long_description=long_description,
       long_description_content_type='text/markdown',
       author='Kevin Froman',
       author_email='beardog@mailbox.org',
       url='https://chaoswebs.net',
-      extras_require={
-        "tor":  ["stem>=1.8"],
-      },
+      install_requires=[
+          'stem',
+          'PySocks'
+      ],
       classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
