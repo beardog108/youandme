@@ -3,7 +3,6 @@ import socket
 from time import time, sleep
 from threading import Thread
 
-from getch import getch
 from stem.control import Controller
 
 try:
