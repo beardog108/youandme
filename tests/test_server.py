@@ -1,23 +1,35 @@
 import unittest
 import socket
 from threading import Thread
+import tempfile
 import time
 import stem
 import stem.process
 from stem.control import Controller
 from youandme import server
 
-control_port = str(1353)
-socks_port = str(1354)
+def get_open_port():
+    # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
+    # changes from source: import moved to top of file, bind specifically to localhost
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("127.0.0.1",0))
+    s.listen(1)
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
-stem.process.launch_tor_with_config(
-config = {
-    'ControlPort':  control_port,
-    'SocksPort': socks_port,
-    'Log': [
-    'NOTICE stdout'
-    ],
-}, take_ownership=True)
+control_port = str(get_open_port())
+socks_port = str(get_open_port())
+assert control_port != socks_port
+
+with tempfile.TemporaryDirectory() as tmpdirname:
+    stem.process.launch_tor_with_config(
+    config = {
+        'ControlPort':  control_port,
+        'SocksPort': socks_port,
+        'DataDirectory': tmpdirname
+
+    }, take_ownership=True, init_msg_handler=lambda i: print(i))
 
 def send_test_data(ip, port):
     time.sleep(2)
@@ -52,7 +64,7 @@ class TestServer(unittest.TestCase):
                 )
                 Thread(target=send_test_data, args=[ip, port], daemon=True).start()
                 conn, addr = s.accept()
-                Thread(target=server, args=[0.1, controller, conn, send_data, recv_data], daemon=True).start()
+                Thread(target=server.server, args=[0.1, controller, conn, send_data, recv_data], daemon=True).start()
                 time.sleep(1)
                 max_iters = 10000000
                 c = 0

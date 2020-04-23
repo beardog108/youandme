@@ -7,8 +7,19 @@ import stem.process
 from stem.control import Controller
 from youandme import client
 
-control_port = str(1353)
-socks_port = str(1354)
+def get_open_port():
+    # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
+    # changes from source: import moved to top of file, bind specifically to localhost
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("127.0.0.1",0))
+    s.listen(1)
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+control_port = str(get_open_port())
+socks_port = str(get_open_port())
+assert control_port != socks_port
 
 stem.process.launch_tor_with_config(
 config = {

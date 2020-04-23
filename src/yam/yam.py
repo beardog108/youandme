@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
 import sys
 import socket
 from time import time, sleep
 from threading import Thread
+import tempfile
+import argparse
 
 from stem.control import Controller
 
@@ -16,12 +19,26 @@ from youandme.client import client
 class _Address:
     address = ""
 
+def _get_open_port():
+    # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
+    # changes from source: import moved to top of file, bind specifically to localhost
+    # vulnerable to race condition
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("127.0.0.1",0))
+    s.listen(1)
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
 def connector(host, send_data, recv_data, address="", control_port=1337, socks_port=1338):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = sock.connect_ex(('127.0.0.1', socks_port))
     if result != 0:
-        launch_tor(control_port=control_port, socks_port=socks_port)
+        try:
+            launch_tor(control_port=control_port, socks_port=socks_port)
+        except OSError:
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                launch_tor(control_port=control_port, socks_port=socks_port, data_dir=tmpdirname)
     if host:
         with Controller.from_port(port=control_port) as controller:
             controller.authenticate()
@@ -79,18 +96,33 @@ def chat(mode, send_data, recv_data):
                 break
             sleep(1)
         except KeyboardInterrupt:
-            pass
+            break
+PORT_MESSAGE = "Specify any free ports above 1023"
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        if sys.argv[1] == 'chat':
-            send_data = bytearray()
-            recv_data = bytearray()
-            if sys.argv[2] == 'host':
-                Thread(target=connector, args=[True, send_data, recv_data], kwargs={'socks_port': int(input("socks")), 'control_port': int(input('control port'))}, daemon=True).start()
-            elif sys.argv[2].startswith('conn'):
-                Thread(target=connector, args=[False, send_data, recv_data], kwargs={'address':  sys.argv[3], 'socks_port': int(input("socks")), 'control_port': int(input('control port'))}, daemon=True).start()
-            else:
-                print('Must specify host or conn')
-                sys.exit(1)
-            chat(sys.argv[2], send_data, recv_data)
+    parser = argparse.ArgumentParser(description='End-to-end encrpyted instant messaging with metadata privacy and perfect forward secrecy')
+    parser.add_argument('connection', choices=['host', 'conn'])
+    parser.add_argument('--socks-port', help='Socks proxy port (will use random if not given)', default=0, type=int)
+    parser.add_argument('--control-port', help='Tor control port (will use random if not given)', default=0, type=int)
+    parser.add_argument('--address', help='Address to connect to. No port.', default='')
+    args = parser.parse_args()
+
+    if args.socks_port == 0: args.socks_port = _get_open_port()
+    if args.control_port == 0: args.control_port = _get_open_port()
+    send_data = bytearray()
+    recv_data = bytearray()
+    if args.connection == 'conn':
+        if not args.address:
+            print("Must specify address if connecting (--address)", file=sys.stderr)
+            sys.exit(3)
+        Thread(target=connector,
+               args=[False, send_data, recv_data],
+               kwargs={'address':  args.address,
+                       'socks_port': args.socks_port,
+                        'control_port': args.control_port}, daemon=True).start()
+        chat('conn', send_data, recv_data)
+    else:
+        Thread(target=connector, args=[True, send_data, recv_data],
+               kwargs={'socks_port': args.socks_port,
+                        'control_port': args.control_port}, daemon=True).start()
+        chat('host', send_data, recv_data)
