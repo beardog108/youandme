@@ -8,6 +8,8 @@ Python library to share data anonymously and securely* with limited traffic meta
 
 `$ pip install youandme`
 
+You also need a recent Tor daemon in executable path. 0.4 Tor is what is tested. https://www.torproject.org/download/tor/
+
 # why
 
 In normal socket connections, Eve can see when Alex and Bob communicate and the size of their communications.
