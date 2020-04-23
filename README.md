@@ -1,5 +1,7 @@
 # youandme
 
+[![Build Status](https://travis-ci.org/beardog108/youandme.svg?branch=master)](https://travis-ci.org/beardog108/youandme)
+
 Python library to share data anonymously and securely* with limited traffic metadata.
 
 \* The ID one connects to a host with must be shared via a secure (private, authenticated) channel.
