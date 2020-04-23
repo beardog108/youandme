@@ -3,5 +3,11 @@ language: python
 python:
         - 3.7
 before_install:
-  - sudo apt-get -y install tor
+  - sudo apt-get -y install wget
+  - wget https://dist.torproject.org/tor-0.4.2.7.tar.gz
+  - tar -xzvf tor-0.4.2.7.tar.gz
+  - cd tor-0.4.2.7/
+  - ./configure
+  - make
+  - sudo make install
 script: make test
