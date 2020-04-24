@@ -74,7 +74,7 @@ class TestClient(unittest.TestCase):
                     if chr(recv_data.pop(0)) in "t"*100:
                         break
                 except IndexError:
-                    self.assertLess((time.time() - start), 20)
+                    self.assertLess((time.time() - start), 60)
                     time.sleep(0.01)
         except KeyboardInterrupt:
             raise
