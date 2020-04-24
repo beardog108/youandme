@@ -90,8 +90,7 @@ def chat(mode, send_data, recv_data, alpha):
                 if char == "\n" or char == "\r\n" or len(display_buffer) > 100:
                     while len(display_buffer) != 0:
                         char = display_buffer.pop(0)
-                        if alpha and char not in printable and \
-                                char not in ('\n', '\r', ' ', '\t'):
+                        if alpha and char not in printable:
                             continue
                         print("\033[1;33m" + char + "\033[0m", end="")
 

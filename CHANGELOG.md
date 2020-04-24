@@ -3,6 +3,11 @@
 This project uses Semantic Versioning
 
 
+## 1.1.2
+
+Fixed redundant whitespace check when filtering printable chars.
+
+
 ## 1.1.1
 
 Fixed setup.py project URL
