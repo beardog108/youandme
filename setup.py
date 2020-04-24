@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 packages = find_packages(exclude=['contrib', 'docs', 'tests'])
 
 setup(name='youandme',
-      version='1.1.2',
+      version='1.2.0',
       description='Simple private data sharing via bytearrays, Tor tunneling and metadata paranoia',
       long_description=long_description,
       long_description_content_type='text/markdown',
