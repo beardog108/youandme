@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import sys
 import socket
-from time import time, sleep
+from time import sleep
 from threading import Thread
 import tempfile
 import argparse
+from string import printable
 
+import socks
 from stem.control import Controller
 
 try:
@@ -16,8 +18,14 @@ except ModuleNotFoundError:
 from youandme.server import server
 from youandme.client import client
 
+
+class Connection:
+    connected = True
+
 class _Address:
     address = ""
+
+
 
 def _get_open_port():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
@@ -54,29 +62,38 @@ def connector(host, send_data, recv_data, address="", control_port=1337, socks_p
                     )
                 _Address.address = serv.service_id
                 conn, addr = s.accept()
-                server(0.01, controller, conn, send_data, recv_data)
+                server(0.01, controller, conn, send_data, recv_data, Connection)
     else:
         if not address.endswith('.onion'):
             address += '.onion'
-        client(0.01, address, socks_port, send_data, recv_data)
+        try:
+            client(0.01, address, socks_port, send_data, recv_data, Connection)
+        except socks.GeneralProxyError:
+            Connection.connected = False
 
-
-def chat(mode, send_data, recv_data):
+def chat(mode, send_data, recv_data, alpha):
+    print("A notice will be shown when connection is established, but messages may be typed now.")
     display_buffer = []
+
     if mode == 'host':
+        print('Creating tunnel...')
         while _Address.address == "":
             sleep(0.01)
+        print('Tunnel address:')
         print(_Address.address)
+
     def display_new():
         while True:
             try:
                 char = chr(recv_data.pop(0))
                 display_buffer.append(char)
                 if char == "\n" or char == "\r\n" or len(display_buffer) > 100:
-                    #print("\033[1;33m", char, "\033[0m", end="\n")
                     while len(display_buffer) != 0:
-                        #print("\033[1;33m", display_buffer.pop(0), "\033[0m", end='')
-                        print("\033[1;33m" + display_buffer.pop(0) + "\033[0m", end="")
+                        char = display_buffer.pop(0)
+                        if alpha and char not in printable and \
+                                char not in ('\n', '\r', ' ', '\t'):
+                            continue
+                        print("\033[1;33m" + char + "\033[0m", end="")
 
             except IndexError:
                 pass
@@ -91,8 +108,8 @@ def chat(mode, send_data, recv_data):
     Thread(target=make_message, daemon=True).start()
     while True:
         try:
-            if send_data is None:
-                print("Well crap, we lost connection.")
+            if not Connection.connected:
+                print("Cease dancing ☹️")
                 break
             sleep(1)
         except KeyboardInterrupt:
@@ -100,10 +117,11 @@ def chat(mode, send_data, recv_data):
 PORT_MESSAGE = "Specify any free ports above 1023"
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='End-to-end encrpyted instant messaging with metadata privacy and perfect forward secrecy')
+    parser = argparse.ArgumentParser(description='End-to-end encrypted instant messaging with metadata privacy and perfect forward secrecy')
     parser.add_argument('connection', choices=['host', 'conn'])
     parser.add_argument('--socks-port', help='Socks proxy port (will use random if not given)', default=0, type=int)
     parser.add_argument('--control-port', help='Tor control port (will use random if not given)', default=0, type=int)
+    parser.add_argument('--alphanum-only', help='Only allow english alpha-numeric characters and spaces/tabs/new lines', default=False, type=bool)
     parser.add_argument('--address', help='Address to connect to. No port.', default='')
     args = parser.parse_args()
 
@@ -120,9 +138,9 @@ if __name__ == "__main__":
                kwargs={'address':  args.address,
                        'socks_port': args.socks_port,
                         'control_port': args.control_port}, daemon=True).start()
-        chat('conn', send_data, recv_data)
+        chat('conn', send_data, recv_data, args.alphanum_only)
     else:
         Thread(target=connector, args=[True, send_data, recv_data],
                kwargs={'socks_port': args.socks_port,
                         'control_port': args.control_port}, daemon=True).start()
-        chat('host', send_data, recv_data)
+        chat('host', send_data, recv_data, args.alphanum_only)

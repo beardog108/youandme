@@ -1,11 +1,12 @@
 import socket
 import time
 from.commands import garbage_character
+from.commands import WELCOME_MESSAGE
 
 from threading import Thread
 
 
-def server(delay: int, controller, conn, send_data: bytearray, recv_data: bytearray):
+def server(delay: int, controller, conn, send_data: bytearray, recv_data: bytearray, connection: "Connection"):
     def send_loop():
         while True:
             time.sleep(delay)
@@ -22,15 +23,15 @@ def server(delay: int, controller, conn, send_data: bytearray, recv_data: bytear
                         except TypeError:
                             conn.sendall(chr(char).encode('utf-8'))
             except OSError:
-                pass
+                connection.connected = False
     first_rec = True
-    WELCOME_MESSAGE = "Connection established\n"
     with conn:
         Thread(target=send_loop, daemon=True).start()
         while True:
             try:
                 data = conn.recv(1)
             except ConnectionResetError:
+                connection.connected = False
                 break
             if not data: break
             if first_rec:

@@ -4,14 +4,17 @@ from time import sleep
 import socks
 
 from .commands import garbage_character
+from .commands import WELCOME_MESSAGE
 
 
-def client(delay: int, hs_id, socks_port, send_data: bytearray, recv_data: bytearray):
+def client(delay: int, hs_id, socks_port, send_data: bytearray, recv_data: bytearray, connection: "Connection"):
     s = socks.socksocket() # Same API as socket.socket in the standard lib
 
     s.set_proxy(socks.SOCKS5, "127.0.0.1", socks_port, rdns=True)
 
     def send_loop():
+        for i in WELCOME_MESSAGE:
+            send_data.append(ord(i))
         while True:
             to_send = None
             if send_data:
@@ -27,9 +30,9 @@ def client(delay: int, hs_id, socks_port, send_data: bytearray, recv_data: bytea
                         s.send(to_send)
                 except BrokenPipeError:
                     # lost connection
-                    pass
+                    connection.connected = False
             except BrokenPipeError:
-                pass
+                connection.connected = False
             sleep(delay)
 
     # Can be treated identical to a regular socket object
