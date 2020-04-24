@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/beardog108/youandme.svg?branch=master)](https://travis-ci.org/beardog108/youandme)
 
-Only you and the person you're talking to should know the details of the converation.
+Only you and the person you're talking to should know the details of the conversation.
 
 This is a Python library to share data anonymously and securely* with limited traffic metadata. It is designed for generic byte streaming, but a script 'yam' is included to enable basic CLI instant messaging.
 
