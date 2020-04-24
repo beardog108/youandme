@@ -1,12 +1,16 @@
-# youandme
+# youandme 🧑‍🤝‍🧑
 
 [![Build Status](https://travis-ci.org/beardog108/youandme.svg?branch=master)](https://travis-ci.org/beardog108/youandme)
 
-Python library to share data anonymously and securely* with limited traffic metadata.
+Only you and the person you're talking to should know the details of the converation.
+
+This is a Python library to share data anonymously and securely* with limited traffic metadata. It is designed for generic byte streaming, but a script 'yam' is included to enable basic CLI instant messaging.
 
 \* The ID one connects to a host with must be shared via a secure (private, authenticated) channel.
 
 `$ pip install youandme`
+
+You also need a recent Tor daemon in executable path. 0.4 Tor is what is tested. https://www.torproject.org/download/tor/
 
 # why
 
