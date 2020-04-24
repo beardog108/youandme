@@ -7,6 +7,9 @@ import stem.process
 from stem.control import Controller
 from youandme import client
 
+class Connection:
+    connected = True
+
 def get_open_port():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
     # changes from source: import moved to top of file, bind specifically to localhost

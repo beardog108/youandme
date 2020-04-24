@@ -8,6 +8,9 @@ import stem.process
 from stem.control import Controller
 from youandme import server
 
+class Connection:
+    connected = True
+
 def get_open_port():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
     # changes from source: import moved to top of file, bind specifically to localhost
@@ -64,7 +67,7 @@ class TestServer(unittest.TestCase):
                 )
                 Thread(target=send_test_data, args=[ip, port], daemon=True).start()
                 conn, addr = s.accept()
-                Thread(target=server.server, args=[0.1, controller, conn, send_data, recv_data], daemon=True).start()
+                Thread(target=server.server, args=[0.1, controller, conn, send_data, recv_data, Connection], daemon=True).start()
                 time.sleep(1)
                 max_iters = 10000000
                 c = 0
