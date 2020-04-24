@@ -7,10 +7,13 @@ from .commands import garbage_character
 from .commands import WELCOME_MESSAGE
 
 
-def client(delay: int, hs_id, socks_port, send_data: bytearray, recv_data: bytearray, connection: "Connection"):
+def client(delay: int, hs_id: str, socks_port, send_data: bytearray, recv_data: bytearray, connection: "Connection"):
     s = socks.socksocket() # Same API as socket.socket in the standard lib
 
     s.set_proxy(socks.SOCKS5, "127.0.0.1", socks_port, rdns=True)
+
+    if not hs_id.endswith('.onion'):
+        hs_id += '.onion'
 
     def send_loop():
         for i in WELCOME_MESSAGE:

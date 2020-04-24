@@ -50,7 +50,7 @@ def fake_server():
                     key_content='ED25519-V3',
                     await_publication=True,
                 )
-            Address.address = serv.service_id
+            Address.address = serv.service_id + '.onion'
             conn, addr = s.accept()
             while True:
                 conn.send(chr(116).encode('utf-8'))
