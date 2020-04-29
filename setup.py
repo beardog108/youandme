@@ -16,6 +16,7 @@ setup(name='youandme',
       scripts=['src/yam/yam.py'],
       author_email='beardog@mailbox.org',
       url='http://github.com/beardog108/youandme',
+      python_requires='>=3.7',
       install_requires=[
           'stem',
           'PySocks'
