@@ -58,8 +58,7 @@ That said, one should not rely on any software when the stakes are too high.
 
 # Limitations + Road map
 
-This project will forever follow the KISS principle, but these two three will be addressed.
+This project will forever follow the KISS principle, but these two will be addressed.
 
-* Multi-byte character support (full utf-8 support)
 * Tor bridge support
-* Support non-anonymous hidden services. Mainly useful for certain development needs
+* Support non-anonymous hidden services. Mainly useful for certain development needs, but also good for latency.
