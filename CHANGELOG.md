@@ -2,6 +2,12 @@
 
 This project uses Semantic Versioning
 
+## 2.0.0
+
+* Added full utf-8 support via base85
+* removed connection established message, apps can send that themselves (yam util does)
+
+
 ## 1.2.0
 
 * finished basic client tests

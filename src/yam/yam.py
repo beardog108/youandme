@@ -19,6 +19,7 @@ except ModuleNotFoundError:
 from youandme.commands import terminator
 from youandme.server import server
 from youandme.client import client
+from youandme.stream import encode_and_send, decoded_recv_stream
 
 
 class Connection:
@@ -82,7 +83,7 @@ def connector(host, send_data, recv_data,
 
 
 def chat(mode, send_data, recv_data, alpha):
-    print("A notice will be shown when connection is established," +
+    print("A notice will be shown when connection is established, " +
           "but messages may be typed now.")
     display_buffer = []
 
@@ -94,17 +95,32 @@ def chat(mode, send_data, recv_data, alpha):
         print(_Address.address)
 
     def display_new():
-        for message in get_messages
+        buffer = []
+        while True:
+            try:
+                for message in decoded_recv_stream(recv_data, 0.5):
+                    if alpha:
+                        for c in message:
+                            c = c.decode('utf-8')
+                            if c not in printable:
+                                continue
+                            if len(buffer) < 1000:
+                                buffer.append(c)
+                        print("\033[1;33m" + "".join(buffer) + "\033[0m")
+                    else:
+                        print("\033[1;33m" + message.decode('utf-8') + "\033[0m")
+            except ValueError:
+                pass
+
     Thread(target=display_new, daemon=True).start()
 
     def make_message():
         while True:
             new = input("\033[0m").encode('utf-8')  # nosec
-            for b in new:
-                send_data.append(b)
-            send_data.append(ord(b"\n"))
+            encode_and_send(send_data, new)
 
     Thread(target=make_message, daemon=True).start()
+    encode_and_send(send_data, "Connection established")
     while True:
         try:
             if not Connection.connected:

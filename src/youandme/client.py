@@ -4,7 +4,6 @@ from time import sleep
 import socks
 
 from .commands import garbage_character
-from .commands import WELCOME_MESSAGE
 
 
 def client(delay: int, hs_id: str, socks_port, send_data: bytearray, recv_data: bytearray, connection: "Connection"):
@@ -16,8 +15,6 @@ def client(delay: int, hs_id: str, socks_port, send_data: bytearray, recv_data: 
         hs_id += '.onion'
 
     def send_loop():
-        for i in WELCOME_MESSAGE:
-            send_data.append(ord(i))
         while True:
             to_send = None
             if send_data:
